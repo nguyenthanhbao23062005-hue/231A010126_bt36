@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hứng Táo - Catch the Apple</title>
+  <!-- Google Fonts: Fredoka & Quicksand -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+/* ==========================================================================
+   MINI GAME: HỨNG TÁO (CATCH THE APPLE)
+   Phong cách: Flat-Cartoon cao cấp, ấm áp, chuyển động mượt mà & nịnh mắt
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. BẢNG MÀU & BIẾN CSS (COLOR PALETTE & DESIGN TOKENS)
+   -------------------------------------------------------------------------- */
+:root {
+  /* Bảng màu chính (Palette) */
+  --bg-page: #EFE7D8;
+  --bg-game: #FAF6EB;
+  --bg-panel: #FFFFFF;
+  
+  --color-border: #5C3D2E;
+  --color-text-main: #3D2C1E;
+  --color-text-muted: #7A6555;
+  
+  --color-apple: #E63946;
+  --color-apple-shadow: #BA1827;
+  --color-leaf: #4E9F3D;
+  --color-stem: #5C3D2E;
+  
+  --color-rotten: #4B3B5E;
+  --color-rotten-mold: #6A7F46;
+  
+  --color-basket: #9C6644;
+  --color-basket-dark: #6F421E;
+  --color-basket-light: #C68B59;
+  
+  --color-btn: #2A9D8F;
+  --color-btn-hover: #21867A;
+  --color-btn-shadow: #195850;
+  
+  --color-accent-gold: #F4A261;
+  --color-accent-red: #E76F51;
+  
+  /* Fonts */
+  --font-display: 'Fredoka', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-ui: 'Quicksand', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET & BỐ CỤC CHUNG
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg-page);
+  background-image: 
+    radial-gradient(#E2D7C3 18%, transparent 19%),
+    radial-gradient(#E2D7C3 18%, transparent 19%);
+  background-size: 36px 36px;
+  background-position: 0 0, 18px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-ui);
+  color: var(--color-text-main);
+  padding: 16px 10px;
+  overflow-x: hidden;
+}
+
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 640px;
+}
+
+/* --------------------------------------------------------------------------
+   3. HEADER & TIÊU ĐỀ
+   -------------------------------------------------------------------------- */
+.game-header {
+  text-align: center;
+  margin-bottom: 12px;
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.game-title {
+  font-family: var(--font-display);
+  font-size: 29px;
+  font-weight: 700;
+  color: var(--color-border);
+  letter-spacing: 0.8px;
+  text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.95), 0 4px 12px rgba(92, 61, 46, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.game-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   4. BẢNG CHỈ SỐ UI (GAME BAR: #score, #lives, #start-btn)
+   Đặc tả: width: 100%; max-width: 640px; margin: 0 auto; gap: 12px; padding: 12px 16px;
+   Mọi khoảng cách giữa các phần tử đều bằng 12px, độ rộng độc lập với #game-container
+   -------------------------------------------------------------------------- */
+.ui-panel {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  background: var(--bg-panel);
+  border: 3.5px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--color-border), 0 10px 20px rgba(92, 61, 46, 0.08);
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 3 card thống kê: height 64px, padding: 0 12px, flex: 1 1 0, min-width: 0 */
+.stat-badge {
+  height: 64px;
+  padding: 0 12px;
+  flex: 1 1 0;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-game);
+  border: 2px solid #E5DBC7;
+  border-radius: 12px;
+  transition: transform 0.15s ease;
+}
+
+/* Riêng card Mạng flex: 1.3 vì chứa nhiều phần tử hơn */
+.stat-badge.stat-lives {
+  flex: 1.3 1 0;
+}
+
+.stat-badge:hover {
+  transform: translateY(-1px);
+}
+
+/* Icon 28px bên trái */
+.stat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Cụm label phía trên và giá trị phía dưới */
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* Label: font-size 11px, uppercase, white-space: nowrap, letter-spacing: 0.5px */
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+/* Giá trị: font-size 20px, line-height 1 */
+.stat-value,
+#score,
+#high-score {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-border);
+  display: inline-block;
+  white-space: nowrap;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s;
+}
+
+/* Hiệu ứng nảy số khi ăn điểm */
+.score-pop {
+  transform: scale(1.35) !important;
+  color: #E76F51 !important;
+}
+
+#high-score {
+  color: #B5651D;
+}
+
+/* Khối hiển thị số mạng sống và 3 tim */
+.lives-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  line-height: 1;
+}
+
+#lives {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-apple);
+  display: inline-block;
+  white-space: nowrap;
+  transition: transform 0.15s ease;
+}
+
+/* Hàng 3 trái tim: flex-wrap: nowrap, mỗi tim 16px, gap 4px */
+.hearts-display {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.heart-svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: block;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.2s ease, opacity 0.2s ease;
+}
+
+.heart-svg.active {
+  fill: #E63946;
+}
+
+.heart-svg.lost {
+  fill: #5C4D44;
+  opacity: 0.4;
+}
+
+/* Hiệu ứng nhịp tim đập hồi hộp khi còn 1 mạng */
+.heart-danger .heart-svg.active {
+  animation: heartThrob 0.65s ease-in-out infinite alternate !important;
+}
+
+@keyframes heartThrob {
+  0% { transform: scale(1); filter: drop-shadow(0 0 1px rgba(230, 57, 70, 0.4)); }
+  100% { transform: scale(1.22); filter: drop-shadow(0 0 4px rgba(230, 57, 70, 0.8)); }
+}
+
+/* Hiệu ứng giật đỏ khi mất mạng */
+.heart-shatter {
+  animation: heartShake 0.3s ease-in-out;
+}
+
+@keyframes heartShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px) scale(0.95); }
+  75% { transform: translateX(3px) scale(1.05); }
+}
+
+/* NÚT LOA: vuông 48x48px, căn giữa theo chiều dọc, flex: 0 0 auto */
+#sound-btn,
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  max-width: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  background: var(--bg-game);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: 0 2.5px 0 var(--color-border);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s;
+}
+
+#sound-btn:hover,
+.icon-btn:hover {
+  background: #FFFFFF;
+  transform: translateY(-1px);
+  box-shadow: 0 3.5px 0 var(--color-border);
+}
+
+#sound-btn:active,
+.icon-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--color-border);
+}
+
+/* NÚT BẮT ĐẦU: height: 64px, min-width: 112px, white-space: nowrap, flex: 0 0 auto, bóng đổ 0 3px 0 */
+#start-btn {
+  height: 64px;
+  min-width: 112px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  background-color: var(--color-btn);
+  color: #FFFFFF;
+  border: 2.5px solid var(--color-border);
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--color-border);
+  transition: all 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+#start-btn:hover {
+  background-color: var(--color-btn-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--color-border);
+}
+
+#start-btn:active {
+  transform: translateY(2.5px);
+  box-shadow: 0 0.5px 0 var(--color-border);
+}
+
+/* --------------------------------------------------------------------------
+   5. KHUNG CHƠI CHÍNH (#game-container)
+   Đặc tả: rộng 500px, cao 400px, border-radius, nền sáng, position: relative, overflow: hidden
+   -------------------------------------------------------------------------- */
+#game-container {
+  width: 500px;
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #E6F3F8 0%, #FAF6EB 60%, #EFE8D6 100%);
+  border: 4px solid var(--color-border);
+  box-shadow: 0 6px 0 var(--color-border), 0 20px 35px rgba(92, 61, 46, 0.16);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Hiệu ứng mất mạng: Rung khung nhẹ kèm viền đỏ nổi bật, KHÔNG dùng overlay pha trộn làm bẩn nền */
+#game-container.damage-flash {
+  border-color: #E63946;
+  box-shadow: 0 0 0 4px rgba(220, 50, 50, 0.35), 0 6px 0 var(--color-border), 0 20px 35px rgba(92, 61, 46, 0.16);
+}
+
+/* Hiệu ứng rung khung khi mất mạng (mềm mại, không làm chói mắt) */
+#game-container.shake-container {
+  animation: containerShake 0.32s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes containerShake {
+  10%, 90% { transform: translate3d(-3px, 1px, 0); }
+  20%, 80% { transform: translate3d(3px, -1px, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 1px, 0); }
+  40%, 60% { transform: translate3d(3px, -1px, 0); }
+}
+
+/* --------------------------------------------------------------------------
+   6. LỚP NỀN CÂY TÁO (#game-bg)
+   Đặc tả: position: absolute; inset: 0; z-index: 0; pointer-events: none;
+   background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDUwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8IS0tIEdyYWRpZW50IELhuqd1IHRy4budaSBzw6FuZyBk4buLdSAtLT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic2t5R3JhZCIgeDE9IjI1MCIgeTE9IjAiIHgyPSIyNTAiIHkyPSIzNTAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0U4RjRGOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjY1JSIgc3RvcC1jb2xvcj0iI0Y0RjhGMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNGQUY3RUUiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CgogICAgPCEtLSBHcmFkaWVudCBN4bq3dCDEkeG6pXQgdGjhuqNtIGPhu48gc8OhbmcgLS0+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdyYXNzR3JhZCIgeDE9IjI1MCIgeTE9IjM0MCIgeDI9IjI1MCIgeTI9IjQwMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjQzJFNTkyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0E4RDY3NiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CgogIDwhLS0gMS4gQuG6plUgVFLhu5xJIE7hu4BOIFPDgU5HIC0tPgogIDxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNDAwIiBmaWxsPSJ1cmwoI3NreUdyYWQpIi8+CgogIDwhLS0gMi4gTeG6tlQgxJDhuqRUICYgVEjhuqJNIEPhu44gxJDDgVkgS0hVTkcgKHk6IDM0MCAtIDQwMCkgLS0+CiAgPCEtLSDEkOG7k2kgdGhvYWkgdGhv4bqjaSBwaMOtYSBzYXUgLS0+CiAgPHBhdGggZD0iTS0yMCAzNjUgUTExMCAzMzggMjQwIDM1NSBUNTIwIDM0OCBMNTIwIDQwMCBMLTIwIDQwMCBaIiBmaWxsPSIjRDNFREIwIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIFRo4bqjbSBj4buPIGNow61uaCBwaMOtYSB0csaw4bubYyAtLT4KICA8cGF0aCBkPSJNLTEwIDM2MCBRMTMwIDM0OCAyNjAgMzYyIFQ1MTAgMzU1IEw1MTAgNDAwIEwtMTAgNDAwIFoiIGZpbGw9InVybCgjZ3Jhc3NHcmFkKSIvPgoKICA8IS0tIELDumkgY+G7jyBob+G6oXQgaMOsbmggbmjhu48gdHJhbmcgdHLDrSDhu58gxJHDoXkgLS0+CiAgPHBhdGggZD0iTTQ1IDM2NSBRNDggMzU1IDUyIDM2NiBNNDggMzY1IFE1NCAzNTMgNTggMzY3IiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTE0MCAzNzIgUTE0NCAzNjAgMTQ4IDM3MyBNMTQ0IDM3MiBRMTUwIDM1OCAxNTUgMzc0IiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTM3NSAzNjggUTM3OCAzNTcgMzgzIDM3MCBNMzc5IDM2OSBRMzg2IDM1NSAzOTEgMzcxIiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTQ0NSAzNjUgUTQ0OSAzNTMgNDU0IDM2NiBNNDUwIDM2NiBRNDU3IDM1MSA0NjIgMzY3IiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CgogIDwhLS0gMy4gVEjDgk4gQ8OCWSBUw4FPIChO4bqxbSBnaeG7r2EgeDogMjM0LTI2NiwgcuG7mW5nIDMycHgsIGThu6tuZyDhu58geTogMzQwKSAtLT4KICA8IS0tIE5ow6FuaCB2xrDGoW4gc2FuZyB0csOhaSAtLT4KICA8cGF0aCBkPSJNMjQyIDE2NSBDMjM1IDE0NSAyMTAgMTMwIDE4NSAxMTUgQzIwNSAxMTAgMjI4IDEyNSAyNDUgMTQ1IFoiIGZpbGw9IiNCQ0EzOEEiLz4KICA8IS0tIE5ow6FuaCB2xrDGoW4gc2FuZyBwaOG6o2kgLS0+CiAgPHBhdGggZD0iTTI1OCAxNTAgQzI2OCAxMzUgMjk1IDEyMCAzMjAgMTA1IEMzMDUgMTA1IDI4MiAxMjAgMjU1IDEzOCBaIiBmaWxsPSIjQkNBMzhBIi8+CgogIDwhLS0gVGjDom4gY2jDrW5oIChtw6B1IG7DonUgbmjhuqF0IMOtdCBiw6NvIGhvw6AsIGtow7RuZyB0csO5bmcgbcOgdSBnaeG7jykgLS0+CiAgPHBhdGggZD0iTTIzNCAxMTAgTDIzNSAzMjAgUTIzNSAzNDAgMjI2IDM0NSBMMjc0IDM0NSBRMjY1IDM0MCAyNjUgMzIwIEwyNjYgMTEwIFoiIGZpbGw9IiNDOEI0OUUiLz4KICA8IS0tIFbhu4d0IGLDs25nIMSR4buVICYgdsOibiBn4buXIG5o4bq5IHRyw6puIHRow6JuIC0tPgogIDxwYXRoIGQ9Ik0yMzQgMTEwIEwyMzUgMzIwIFEyMzUgMzM4IDIzMCAzNDUgTDI0MiAzNDUgUTI0NSAzMzUgMjQ0IDMyMCBMMjQyIDExMCBaIiBmaWxsPSIjQjU5RTg3IiBvcGFjaXR5PSIwLjUiLz4KICA8cGF0aCBkPSJNMjU1IDE0MCBRMjU0IDE4MCAyNTYgMjIwIiBzdHJva2U9IiNCMDk5ODIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjYiLz4KICA8cGF0aCBkPSJNMjQ4IDI0MCBRMjQ5IDI3NSAyNDcgMzA1IiBzdHJva2U9IiNCMDk5ODIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjYiLz4KCiAgPCEtLSA0LiBUw4FOIEzDgSBDw4JZIFTDgU8gKFBo4bunIGvDrW4gdG/DoG4gYuG7mSBjaGnhu4F1IG5nYW5nIHg6IDAgLT4gNTAwLCB5OiAwIC0+IDEyNSkgLS0+CiAgPCEtLSBLSMOUTkcgY8OzIHF14bqjLCBLSMOUTkcgY8OzIGNo4bqlbSDEkeG7jy92w6BuZy90w61tIC0tPgoKICA8IS0tIEzhu5twIGzDoSBwaMOtYSBzYXUgKFhhbmggduG7q2EgLSB0cnVuZyB0w61uaCkgLS0+CiAgPGcgZmlsbD0iIzc0QTc0NSI+CiAgICA8IS0tIEPhu6VtIGzDoSB0csOgbiBtw6lwIHRyw6FpIC0tPgogICAgPGNpcmNsZSBjeD0iLTE1IiBjeT0iNDUiIHI9Ijc1Ii8+CiAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjMwIiByPSI3MCIvPgogICAgPGNpcmNsZSBjeD0iMTE1IiBjeT0iNTUiIHI9IjY1Ii8+CiAgICA8IS0tIEPhu6VtIGzDoSBnaeG7r2EgLS0+CiAgICA8Y2lyY2xlIGN4PSIxODAiIGN5PSIzNSIgcj0iNzUiLz4KICAgIDxjaXJjbGUgY3g9IjI1MCIgY3k9IjI1IiByPSI4MCIvPgogICAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iMzUiIHI9Ijc1Ii8+CiAgICA8IS0tIEPhu6VtIGzDoSB0csOgbiBtw6lwIHBo4bqjaSAtLT4KICAgIDxjaXJjbGUgY3g9IjM4NSIgY3k9IjU1IiByPSI2NSIvPgogICAgPGNpcmNsZSBjeD0iNDUwIiBjeT0iMzAiIHI9IjcwIi8+CiAgICA8Y2lyY2xlIGN4PSI1MTUiIGN5PSI0NSIgcj0iNzUiLz4KICA8L2c+CgogIDwhLS0gTOG7m3AgbMOhIOG7nyBnaeG7r2EgKFhhbmggdMawxqFpIG3DoXQpIC0tPgogIDxnIGZpbGw9IiM4OEJBNUQiPgogICAgPGNpcmNsZSBjeD0iMTUiIGN5PSI2NSIgcj0iNjUiLz4KICAgIDxjaXJjbGUgY3g9Ijc1IiBjeT0iNzUiIHI9IjYwIi8+CiAgICA8Y2lyY2xlIGN4PSIxNDAiIGN5PSI2MCIgcj0iNzAiLz4KICAgIDxjaXJjbGUgY3g9IjIxMCIgY3k9IjcwIiByPSI2NSIvPgogICAgPGNpcmNsZSBjeD0iMjgwIiBjeT0iNjUiIHI9IjcwIi8+CiAgICA8Y2lyY2xlIGN4PSIzNTAiIGN5PSI3NSIgcj0iNjIiLz4KICAgIDxjaXJjbGUgY3g9IjQyMCIgY3k9IjYwIiByPSI2OCIvPgogICAgPGNpcmNsZSBjeD0iNDg1IiBjeT0iNjUiIHI9IjY1Ii8+CiAgICA8IS0tIMSQ4buJbmggY2hlIGvDrW4gc8OhdCBtw6lwIHk6IDAgLS0+CiAgICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjODhCQTVEIi8+CiAgPC9nPgoKICA8IS0tIEzhu5twIGzDoSBu4buVaSBwaMOtYSB0csaw4bubYyAmIHZp4buBbiBzw7NuZyBsxrDhu6NuIChYYW5oIHPDoW5nIGThu4t1LCB04bqhbyBjaGnhu4F1IHPDonUpIC0tPgogIDxnIGZpbGw9IiM5RUNCNkIiPgogICAgPGNpcmNsZSBjeD0iNDAiIGN5PSI3NSIgcj0iNDgiLz4KICAgIDxjaXJjbGUgY3g9IjEwNSIgY3k9Ijg1IiByPSI0NiIvPgogICAgPGNpcmNsZSBjeD0iMTc1IiBjeT0iODAiIHI9IjUyIi8+CiAgICA8Y2lyY2xlIGN4PSIyNDUiIGN5PSI4OCIgcj0iNDgiLz4KICAgIDxjaXJjbGUgY3g9IjMxNSIgY3k9IjgwIiByPSI1MCIvPgogICAgPGNpcmNsZSBjeD0iMzg1IiBjeT0iODUiIHI9IjQ2Ii8+CiAgICA8Y2lyY2xlIGN4PSI0NTUiIGN5PSI3NSIgcj0iNDgiLz4KICAgIDxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSI1MDAiIGhlaWdodD0iMzUiIGZpbGw9IiM5RUNCNkIiLz4KICA8L2c+CgogIDwhLS0gxJBp4buDbSB4dXnhur90IHbDoGkgduG7h3Qgc8OhbmcgdHLDqm4gdsOybSBsw6EgLS0+CiAgPGcgZmlsbD0iI0I0REM4NCIgb3BhY2l0eT0iMC43NSI+CiAgICA8cGF0aCBkPSJNOTAgNjUgUTExNSA1MCAxMzUgNjggUTExNSA2MiA5MCA2NSBaIi8+CiAgICA8cGF0aCBkPSJNMjI1IDY1IFEyNTAgNTAgMjc1IDY2IFEyNTAgNjAgMjI1IDY1IFoiLz4KICAgIDxwYXRoIGQ9Ik0zNjUgNjUgUTM5MCA1MCA0MTAgNjggUTM5MCA2MiAzNjUgNjUgWiIvPgogIDwvZz4KPC9zdmc+Cg==') center / cover no-repeat;
+   Không có animation cho nền
+   -------------------------------------------------------------------------- */
+#game-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDUwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPGRlZnM+CiAgICA8IS0tIEdyYWRpZW50IELhuqd1IHRy4budaSBzw6FuZyBk4buLdSAtLT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic2t5R3JhZCIgeDE9IjI1MCIgeTE9IjAiIHgyPSIyNTAiIHkyPSIzNTAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0U4RjRGOCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjY1JSIgc3RvcC1jb2xvcj0iI0Y0RjhGMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNGQUY3RUUiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CgogICAgPCEtLSBHcmFkaWVudCBN4bq3dCDEkeG6pXQgdGjhuqNtIGPhu48gc8OhbmcgLS0+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImdyYXNzR3JhZCIgeDE9IjI1MCIgeTE9IjM0MCIgeDI9IjI1MCIgeTI9IjQwMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjQzJFNTkyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI0E4RDY3NiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CgogIDwhLS0gMS4gQuG6plUgVFLhu5xJIE7hu4BOIFPDgU5HIC0tPgogIDxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNDAwIiBmaWxsPSJ1cmwoI3NreUdyYWQpIi8+CgogIDwhLS0gMi4gTeG6tlQgxJDhuqRUICYgVEjhuqJNIEPhu44gxJDDgVkgS0hVTkcgKHk6IDM0MCAtIDQwMCkgLS0+CiAgPCEtLSDEkOG7k2kgdGhvYWkgdGhv4bqjaSBwaMOtYSBzYXUgLS0+CiAgPHBhdGggZD0iTS0yMCAzNjUgUTExMCAzMzggMjQwIDM1NSBUNTIwIDM0OCBMNTIwIDQwMCBMLTIwIDQwMCBaIiBmaWxsPSIjRDNFREIwIiBvcGFjaXR5PSIwLjciLz4KICA8IS0tIFRo4bqjbSBj4buPIGNow61uaCBwaMOtYSB0csaw4bubYyAtLT4KICA8cGF0aCBkPSJNLTEwIDM2MCBRMTMwIDM0OCAyNjAgMzYyIFQ1MTAgMzU1IEw1MTAgNDAwIEwtMTAgNDAwIFoiIGZpbGw9InVybCgjZ3Jhc3NHcmFkKSIvPgoKICA8IS0tIELDumkgY+G7jyBob+G6oXQgaMOsbmggbmjhu48gdHJhbmcgdHLDrSDhu58gxJHDoXkgLS0+CiAgPHBhdGggZD0iTTQ1IDM2NSBRNDggMzU1IDUyIDM2NiBNNDggMzY1IFE1NCAzNTMgNTggMzY3IiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTE0MCAzNzIgUTE0NCAzNjAgMTQ4IDM3MyBNMTQ0IDM3MiBRMTUwIDM1OCAxNTUgMzc0IiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTM3NSAzNjggUTM3OCAzNTcgMzgzIDM3MCBNMzc5IDM2OSBRMzg2IDM1NSAzOTEgMzcxIiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTQ0NSAzNjUgUTQ0OSAzNTMgNDU0IDM2NiBNNDUwIDM2NiBRNDU3IDM1MSA0NjIgMzY3IiBzdHJva2U9IiM4Q0JGNTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CgogIDwhLS0gMy4gVEjDgk4gQ8OCWSBUw4FPIChO4bqxbSBnaeG7r2EgeDogMjM0LTI2NiwgcuG7mW5nIDMycHgsIGThu6tuZyDhu58geTogMzQwKSAtLT4KICA8IS0tIE5ow6FuaCB2xrDGoW4gc2FuZyB0csOhaSAtLT4KICA8cGF0aCBkPSJNMjQyIDE2NSBDMjM1IDE0NSAyMTAgMTMwIDE4NSAxMTUgQzIwNSAxMTAgMjI4IDEyNSAyNDUgMTQ1IFoiIGZpbGw9IiNCQ0EzOEEiLz4KICA8IS0tIE5ow6FuaCB2xrDGoW4gc2FuZyBwaOG6o2kgLS0+CiAgPHBhdGggZD0iTTI1OCAxNTAgQzI2OCAxMzUgMjk1IDEyMCAzMjAgMTA1IEMzMDUgMTA1IDI4MiAxMjAgMjU1IDEzOCBaIiBmaWxsPSIjQkNBMzhBIi8+CgogIDwhLS0gVGjDom4gY2jDrW5oIChtw6B1IG7DonUgbmjhuqF0IMOtdCBiw6NvIGhvw6AsIGtow7RuZyB0csO5bmcgbcOgdSBnaeG7jykgLS0+CiAgPHBhdGggZD0iTTIzNCAxMTAgTDIzNSAzMjAgUTIzNSAzNDAgMjI2IDM0NSBMMjc0IDM0NSBRMjY1IDM0MCAyNjUgMzIwIEwyNjYgMTEwIFoiIGZpbGw9IiNDOEI0OUUiLz4KICA8IS0tIFbhu4d0IGLDs25nIMSR4buVICYgdsOibiBn4buXIG5o4bq5IHRyw6puIHRow6JuIC0tPgogIDxwYXRoIGQ9Ik0yMzQgMTEwIEwyMzUgMzIwIFEyMzUgMzM4IDIzMCAzNDUgTDI0MiAzNDUgUTI0NSAzMzUgMjQ0IDMyMCBMMjQyIDExMCBaIiBmaWxsPSIjQjU5RTg3IiBvcGFjaXR5PSIwLjUiLz4KICA8cGF0aCBkPSJNMjU1IDE0MCBRMjU0IDE4MCAyNTYgMjIwIiBzdHJva2U9IiNCMDk5ODIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjYiLz4KICA8cGF0aCBkPSJNMjQ4IDI0MCBRMjQ5IDI3NSAyNDcgMzA1IiBzdHJva2U9IiNCMDk5ODIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjYiLz4KCiAgPCEtLSA0LiBUw4FOIEzDgSBDw4JZIFTDgU8gKFBo4bunIGvDrW4gdG/DoG4gYuG7mSBjaGnhu4F1IG5nYW5nIHg6IDAgLT4gNTAwLCB5OiAwIC0+IDEyNSkgLS0+CiAgPCEtLSBLSMOUTkcgY8OzIHF14bqjLCBLSMOUTkcgY8OzIGNo4bqlbSDEkeG7jy92w6BuZy90w61tIC0tPgoKICA8IS0tIEzhu5twIGzDoSBwaMOtYSBzYXUgKFhhbmggduG7q2EgLSB0cnVuZyB0w61uaCkgLS0+CiAgPGcgZmlsbD0iIzc0QTc0NSI+CiAgICA8IS0tIEPhu6VtIGzDoSB0csOgbiBtw6lwIHRyw6FpIC0tPgogICAgPGNpcmNsZSBjeD0iLTE1IiBjeT0iNDUiIHI9Ijc1Ii8+CiAgICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjMwIiByPSI3MCIvPgogICAgPGNpcmNsZSBjeD0iMTE1IiBjeT0iNTUiIHI9IjY1Ii8+CiAgICA8IS0tIEPhu6VtIGzDoSBnaeG7r2EgLS0+CiAgICA8Y2lyY2xlIGN4PSIxODAiIGN5PSIzNSIgcj0iNzUiLz4KICAgIDxjaXJjbGUgY3g9IjI1MCIgY3k9IjI1IiByPSI4MCIvPgogICAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iMzUiIHI9Ijc1Ii8+CiAgICA8IS0tIEPhu6VtIGzDoSB0csOgbiBtw6lwIHBo4bqjaSAtLT4KICAgIDxjaXJjbGUgY3g9IjM4NSIgY3k9IjU1IiByPSI2NSIvPgogICAgPGNpcmNsZSBjeD0iNDUwIiBjeT0iMzAiIHI9IjcwIi8+CiAgICA8Y2lyY2xlIGN4PSI1MTUiIGN5PSI0NSIgcj0iNzUiLz4KICA8L2c+CgogIDwhLS0gTOG7m3AgbMOhIOG7nyBnaeG7r2EgKFhhbmggdMawxqFpIG3DoXQpIC0tPgogIDxnIGZpbGw9IiM4OEJBNUQiPgogICAgPGNpcmNsZSBjeD0iMTUiIGN5PSI2NSIgcj0iNjUiLz4KICAgIDxjaXJjbGUgY3g9Ijc1IiBjeT0iNzUiIHI9IjYwIi8+CiAgICA8Y2lyY2xlIGN4PSIxNDAiIGN5PSI2MCIgcj0iNzAiLz4KICAgIDxjaXJjbGUgY3g9IjIxMCIgY3k9IjcwIiByPSI2NSIvPgogICAgPGNpcmNsZSBjeD0iMjgwIiBjeT0iNjUiIHI9IjcwIi8+CiAgICA8Y2lyY2xlIGN4PSIzNTAiIGN5PSI3NSIgcj0iNjIiLz4KICAgIDxjaXJjbGUgY3g9IjQyMCIgY3k9IjYwIiByPSI2OCIvPgogICAgPGNpcmNsZSBjeD0iNDg1IiBjeT0iNjUiIHI9IjY1Ii8+CiAgICA8IS0tIMSQ4buJbmggY2hlIGvDrW4gc8OhdCBtw6lwIHk6IDAgLS0+CiAgICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjODhCQTVEIi8+CiAgPC9nPgoKICA8IS0tIEzhu5twIGzDoSBu4buVaSBwaMOtYSB0csaw4bubYyAmIHZp4buBbiBzw7NuZyBsxrDhu6NuIChYYW5oIHPDoW5nIGThu4t1LCB04bqhbyBjaGnhu4F1IHPDonUpIC0tPgogIDxnIGZpbGw9IiM5RUNCNkIiPgogICAgPGNpcmNsZSBjeD0iNDAiIGN5PSI3NSIgcj0iNDgiLz4KICAgIDxjaXJjbGUgY3g9IjEwNSIgY3k9Ijg1IiByPSI0NiIvPgogICAgPGNpcmNsZSBjeD0iMTc1IiBjeT0iODAiIHI9IjUyIi8+CiAgICA8Y2lyY2xlIGN4PSIyNDUiIGN5PSI4OCIgcj0iNDgiLz4KICAgIDxjaXJjbGUgY3g9IjMxNSIgY3k9IjgwIiByPSI1MCIvPgogICAgPGNpcmNsZSBjeD0iMzg1IiBjeT0iODUiIHI9IjQ2Ii8+CiAgICA8Y2lyY2xlIGN4PSI0NTUiIGN5PSI3NSIgcj0iNDgiLz4KICAgIDxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSI1MDAiIGhlaWdodD0iMzUiIGZpbGw9IiM5RUNCNkIiLz4KICA8L2c+CgogIDwhLS0gxJBp4buDbSB4dXnhur90IHbDoGkgduG7h3Qgc8OhbmcgdHLDqm4gdsOybSBsw6EgLS0+CiAgPGcgZmlsbD0iI0I0REM4NCIgb3BhY2l0eT0iMC43NSI+CiAgICA8cGF0aCBkPSJNOTAgNjUgUTExNSA1MCAxMzUgNjggUTExNSA2MiA5MCA2NSBaIi8+CiAgICA8cGF0aCBkPSJNMjI1IDY1IFEyNTAgNTAgMjc1IDY2IFEyNTAgNjAgMjI1IDY1IFoiLz4KICAgIDxwYXRoIGQ9Ik0zNjUgNjUgUTM5MCA1MCA0MTAgNjggUTM5MCA2MiAzNjUgNjUgWiIvPgogIDwvZz4KPC9zdmc+Cg==') center / cover no-repeat;
+}
+
+/* --------------------------------------------------------------------------
+   7. GIỎ HỨNG (#basket)
+   Đặc tả: nằm ở đáy khung (position: absolute; bottom: 0), kích thước 80x30px
+   Tối ưu hoá chuyển động quán tính và nghiêng tự nhiên
+   -------------------------------------------------------------------------- */
+#basket {
+  position: absolute;
+  bottom: 0;
+  width: 80px;
+  height: 30px;
+  z-index: 10;
+  will-change: left, transform;
+  pointer-events: none;
+  transform-origin: 50% 80%;
+  transition: transform 0.05s linear;
+}
+
+#basket svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 3px 3px rgba(60, 40, 20, 0.25));
+  will-change: transform;
+}
+
+/* Hiệu ứng nhún đàn hồi khi giỏ hứng trúng táo (Squish & Stretch) */
+#basket.basket-bounce svg {
+  animation: basketSquishBounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes basketSquishBounce {
+  0% { transform: scale(1, 1); }
+  25% { transform: scale(1.2, 0.8); }
+  60% { transform: scale(0.92, 1.08); }
+  100% { transform: scale(1, 1); }
+}
+
+/* Hiệu ứng giật lắc khi hứng trúng táo thối */
+#basket.basket-bad svg {
+  animation: basketShockWobble 0.32s ease-in-out;
+}
+
+@keyframes basketShockWobble {
+  0%, 100% { transform: scale(1, 1) rotate(0deg); }
+  20% { transform: scale(0.88, 1.12) rotate(-8deg); filter: drop-shadow(0 0 6px rgba(106, 127, 70, 0.8)); }
+  40% { transform: scale(1.12, 0.88) rotate(8deg); }
+  60% { transform: scale(0.95, 1.05) rotate(-4deg); }
+  80% { transform: scale(1.05, 0.95) rotate(4deg); }
+}
+
+/* --------------------------------------------------------------------------
+   8. QUẢ TÁO (#apple)
+   Đặc tả: position: absolute, di chuyển bằng thuộc tính top/left, kích thước 30x30px
+   z-index: 20 cao hơn popup combo để quả táo luôn nằm TRÊN chữ khi rơi
+   -------------------------------------------------------------------------- */
+#apple {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  z-index: 20;
+  will-change: top, left;
+  pointer-events: none;
+}
+
+#apple svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 15%;
+  filter: drop-shadow(0 2px 3.5px rgba(0, 0, 0, 0.22)) drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.95));
+  animation: appleGentleSway 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes appleGentleSway {
+  0% { transform: rotate(-7deg) scale(0.98); }
+  100% { transform: rotate(7deg) scale(1.02); }
+}
+
+/* Táo thối: Viền sáng mỏng 2px kèm ánh glow nhẹ nổi bật để dễ thấy ngay từ vùng tán lá */
+#apple.rotten svg {
+  animation: rottenJitter 0.5s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 2px #FFFFFF) drop-shadow(0 0 5px rgba(255, 230, 80, 0.95)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+@keyframes rottenJitter {
+  0% { transform: rotate(-10deg) scale(0.95); }
+  50% { transform: rotate(10deg) scale(1.05); }
+  100% { transform: rotate(-8deg) scale(0.98); }
+}
+
+/* --------------------------------------------------------------------------
+   9. LỚP HIỆU ỨNG (FLOATING SCORE, PARTICLES & COMBO)
+   -------------------------------------------------------------------------- */
+#effects-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Chữ điểm số bay lên (+1, -1 Mạng) */
+.score-float {
+  position: absolute;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  color: #E63946;
+  text-shadow: 1.5px 1.5px 0 #FFF, -1.5px -1.5px 0 #FFF, 1.5px -1.5px 0 #FFF, -1.5px 1.5px 0 #FFF, 0 3px 6px rgba(0, 0, 0, 0.15);
+  animation: floatUpSpring 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  pointer-events: none;
+}
+
+.score-float.bad {
+  color: #6A4C93;
+  font-size: 17px;
+}
+
+.score-float.safe {
+  color: #4E9F3D;
+  font-size: 16px;
+}
+
+@keyframes floatUpSpring {
+  0% { opacity: 0; transform: translateY(6px) scale(0.5); }
+  25% { opacity: 1; transform: translateY(-8px) scale(1.25); }
+  75% { opacity: 1; transform: translateY(-24px) scale(1.05); }
+  100% { opacity: 0; transform: translateY(-40px) scale(0.85); }
+}
+
+/* Banner Combo: pointer-events: none, opacity khoảng 0.85, hiện tối đa ~0.75s */
+.combo-banner {
+  position: absolute;
+  left: 50%;
+  top: 135px;
+  transform: translate(-50%, -50%) scale(0.5);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: #E76F51;
+  background: rgba(255, 255, 255, 0.88);
+  border: 2.5px solid #5C3D2E;
+  padding: 5px 16px;
+  border-radius: 25px;
+  box-shadow: 0 3px 0 #5C3D2E, 0 6px 16px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  opacity: 0;
+  animation: comboPop 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  white-space: nowrap;
+}
+
+@keyframes comboPop {
+  0% { opacity: 0; transform: translate(-50%, -30px) scale(0.7); }
+  15% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.08); }
+  65% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -65px) scale(0.9); }
+}
+
+/* Hạt bung toả (Particles) */
+.particle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  animation: particleFloatBurst 0.6s ease-out forwards;
+}
+
+@keyframes particleFloatBurst {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.15) rotate(var(--rot)); }
+}
+
+/* Hiệu ứng giọt nước / bẹp dính khi chạm đáy */
+.splat-ring {
+  position: absolute;
+  width: 24px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(230, 57, 70, 0.6);
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: splatExpand 0.4s ease-out forwards;
+}
+
+@keyframes splatExpand {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.2); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
+}
+
+/* --------------------------------------------------------------------------
+   10. MÀN HÌNH OVERLAY (START PROMPT & GAME OVER)
+   Đặc tả: overlay trong #game-container, không dùng alert()
+   -------------------------------------------------------------------------- */
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(61, 44, 30, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+  opacity: 1;
+  visibility: visible;
+}
+
+.game-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.overlay-card {
+  background: var(--bg-panel);
+  border: 3.5px solid var(--color-border);
+  border-radius: 20px;
+  padding: 22px 24px;
+  text-align: center;
+  width: 380px;
+  box-shadow: 0 6px 0 var(--color-border), 0 20px 35px rgba(0, 0, 0, 0.25);
+  animation: cardPopIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes cardPopIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.overlay-icon {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.bounce-anim {
+  animation: iconBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+.shake-anim {
+  animation: iconShake 0.6s ease-in-out infinite;
+}
+
+@keyframes iconShake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+
+.overlay-title {
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--color-border);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.overlay-title.text-danger {
+  color: #D90429;
+}
+
+.overlay-desc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.legend-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-game);
+  border: 2px dashed #D5CCA8;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.final-score-box {
+  background: var(--bg-game);
+  border: 2.5px solid #E5DBC7;
+  border-radius: 14px;
+  padding: 12px 18px;
+  margin: 12px 0 16px;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 4px 0;
+}
+
+.score-row strong {
+  font-family: var(--font-display);
+  font-size: 23px;
+  color: var(--color-border);
+}
+
+.btn-action {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  background-color: var(--color-btn);
+  color: #FFF;
+  border: 2.5px solid var(--color-border);
+  border-radius: 14px;
+  padding: 11px 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--color-border);
+  transition: all 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 100%;
+}
+
+.btn-action:hover {
+  background-color: var(--color-btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--color-border);
+}
+
+.btn-action:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--color-border);
+}
+
+.btn-restart {
+  background-color: #E76F51;
+}
+.btn-restart:hover {
+  background-color: #D65A3C;
+}
+
+/* --------------------------------------------------------------------------
+   11. FOOTER & PHÍM TẮT
+   -------------------------------------------------------------------------- */
+.game-footer {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.controls-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--bg-panel);
+  border: 1.5px solid var(--color-border);
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-border);
+  box-shadow: 0 2px 0 var(--color-border);
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <!-- TIÊU ĐỀ GAME -->
+    <header class="game-header">
+      <h1 class="game-title">🍎 HỨNG TÁO 🍏</h1>
+      <p class="game-subtitle">Hứng táo chín đỏ (+1 điểm) • Tránh xa táo thối (-1 mạng)</p>
+    </header>
+
+    <!-- BẢNG ĐIỀU KHIỂN & CHỈ SỐ UI -->
+    <div class="ui-panel">
+      <!-- ĐIỂM SỐ (#score) -->
+      <div class="stat-badge stat-score">
+        <span class="stat-icon">⭐</span>
+        <div class="stat-info">
+          <span class="stat-label">ĐIỂM SỐ</span>
+          <span class="stat-value" id="score">0</span>
+        </div>
+      </div>
+
+      <!-- ĐIỂM CAO NHẤT -->
+      <div class="stat-badge stat-best">
+        <span class="stat-icon">🏆</span>
+        <div class="stat-info">
+          <span class="stat-label">KỶ LỤC</span>
+          <span class="stat-value" id="high-score">0</span>
+        </div>
+      </div>
+
+      <!-- MẠNG SỐNG (#lives) -->
+      <div class="stat-badge stat-lives">
+        <div class="stat-info">
+          <span class="stat-label">MẠNG</span>
+          <div class="lives-wrapper">
+            <span class="stat-value" id="lives">3</span>
+            <div class="hearts-display" id="hearts-display" aria-label="3 mạng">
+              <svg class="heart-svg active" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <svg class="heart-svg active" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <svg class="heart-svg active" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NÚT ÂM THANH -->
+      <button id="sound-btn" class="icon-btn" title="Bật/Tắt âm thanh" aria-label="Bật/Tắt âm thanh">
+        <span id="sound-icon">🔊</span>
+      </button>
+
+      <!-- NÚT BẮT ĐẦU (#start-btn) -->
+      <button id="start-btn" class="btn btn-start">
+        <span class="btn-text">Bắt đầu</span>
+        <span class="btn-glow"></span>
+      </button>
+    </div>
+
+    <!-- KHUNG CHƠI CHÍNH (#game-container) 500x400 -->
+    <main id="game-container">
+      <!-- LỚP NỀN CÂY TÁO (#game-bg) -->
+      <div id="game-bg" aria-hidden="true"></div>
+
+      <!-- QUẢ TÁO (#apple) 30x30 -->
+      <div id="apple" aria-label="Quả táo">
+        <!-- SVG Táo được render bằng script.js -->
+      </div>
+
+      <!-- GIỎ HỨNG (#basket) 80x30 -->
+      <div id="basket" aria-label="Giỏ hứng táo">
+        <!-- SVG Giỏ được render bằng script.js -->
+      </div>
+
+      <!-- LỚP HIỆU ỨNG (Particles & Floating Score) -->
+      <div id="effects-layer" aria-hidden="true"></div>
+
+      <!-- MÀN HÌNH CHỜ (START PROMPT) -->
+      <div id="start-overlay" class="game-overlay">
+        <div class="overlay-card">
+          <div class="overlay-icon bounce-anim">🧺</div>
+          <h2 class="overlay-title">SẴN SÀNG CHƯA?</h2>
+          <p class="overlay-desc">Dùng phím mũi tên <strong>Trái (◀)</strong> và <strong>Phải (▶)</strong> hoặc phím <strong>A / D</strong> để di chuyển giỏ hứng.</p>
+          <div class="legend-row">
+            <div class="legend-item">
+              <span class="legend-swatch apple-swatch">🍎</span>
+              <span>Táo chín: <strong>+1 điểm &amp; tăng tốc</strong></span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch rotten-swatch">🟣</span>
+              <span>Táo thối: <strong>-1 mạng! Đừng hứng!</strong></span>
+            </div>
+          </div>
+          <button id="overlay-start-btn" class="btn btn-action">
+            ▶ BẮT ĐẦU CHƠI
+          </button>
+        </div>
+      </div>
+
+      <!-- MÀN HÌNH GAME OVER (#game-over) -->
+      <div id="game-over" class="game-overlay hidden">
+        <div class="overlay-card game-over-card">
+          <div class="overlay-icon shake-anim">💥</div>
+          <h2 class="overlay-title text-danger">GAME OVER</h2>
+          <p class="game-over-msg" id="game-over-msg">Bạn đã hết mạng!</p>
+          
+          <div class="final-score-box">
+            <div class="score-row">
+              <span>Điểm của bạn:</span>
+              <strong id="final-score">0</strong>
+            </div>
+            <div class="score-row">
+              <span>Kỷ lục:</span>
+              <strong id="overlay-high-score">0</strong>
+            </div>
+          </div>
+
+          <button id="restart-btn" class="btn btn-action btn-restart">
+            🔄 CHƠI LẠI
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- HƯỚNG DẪN ĐIỀU KHIỂN & PHÍM TẮT -->
+    <footer class="game-footer">
+      <div class="controls-hint">
+        <span class="key-badge">◀</span>
+        <span class="key-badge">▶</span>
+        <span>Phím mũi tên hoặc</span>
+        <span class="key-badge">A</span>
+        <span class="key-badge">D</span>
+        <span>để di chuyển •</span>
+        <span class="key-badge">Space</span>
+        <span>để Bắt đầu / Chơi lại</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+/**
+ * MINI GAME: HỨNG TÁO (CATCH THE APPLE)
+ * Phiên bản nâng cấp: Chuyển động quán tính mượt mà, hiệu ứng nịnh mắt,
+ * âm thanh Web Audio phong phú và tương tác nảy hoạt hình sống động.
+ * Đảm bảo 100% checklist ID và quy chuẩn kỹ thuật.
+ */
+
+// =============================================================================
+// 1. HẰNG SỐ CẤU HÌNH (CONFIGURATION CONSTANTS)
+// =============================================================================
+const CONTAINER_WIDTH = 500;       // Chiều rộng khung game (px)
+const CONTAINER_HEIGHT = 400;      // Chiều cao khung game (px)
+const BASKET_WIDTH = 80;           // Chiều rộng giỏ hứng (px)
+const BASKET_HEIGHT = 30;          // Chiều cao giỏ hứng (px)
+const APPLE_WIDTH = 30;            // Chiều rộng quả táo (px)
+const APPLE_HEIGHT = 30;           // Chiều cao quả táo (px)
+
+const INITIAL_SPEED = 2.5;         // Tốc độ rơi ban đầu (2.5 px/frame, nằm trong khoảng 2-3 px/frame)
+const SPEED_INCREMENT = 0.3;       // Tăng tốc độ sau mỗi quả táo chín hứng được (+0.3)
+const INITIAL_LIVES = 3;           // Số mạng sống ban đầu
+const ROTTEN_APPLE_CHANCE = 0.25;  // Tỷ lệ xuất hiện táo thối (25%, nằm trong khoảng 20-30%)
+
+// Cấu hình vật lý chuyển động của giỏ (Inertia & Smooth Tilt)
+const BASKET_ACCEL = 1.35;         // Gia tốc giỏ khi nhấn giữ phím
+const BASKET_FRICTION = 0.82;      // Độ ma sát hãm đà khi nhả phím
+const MAX_BASKET_SPEED = 8.5;      // Vận tốc tối đa của giỏ (px/frame)
+const MAX_TILT_DEGREE = 6.5;       // Góc nghiêng tối đa khi di chuyển (độ)
+
+// =============================================================================
+// 2. TÀI NGUYÊN ĐỒ HOẠ SVG (SVG ASSETS)
+// =============================================================================
+
+// Quả táo chín đỏ (Red Apple) - SVG 30x30px
+const NORMAL_APPLE_SVG = `
+<svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cuống táo -->
+  <path d="M15 9 C15 5, 17 2, 19 1" stroke="#5C3D2E" stroke-width="2" stroke-linecap="round"/>
+  <!-- Lá xanh -->
+  <path d="M16 6 C20 4, 23 6, 22 9 C19 10, 16 8, 16 6 Z" fill="#4E9F3D"/>
+  <path d="M17 6.5 C19 5.5, 21 6.5, 21 7.5" stroke="#70C050" stroke-width="0.8" stroke-linecap="round"/>
+  <!-- Thân táo đỏ -->
+  <path d="M15 11 C11 7, 3 10, 4 18 C5 24, 11 27, 15 28 C19 27, 25 24, 26 18 C27 10, 19 7, 15 11 Z" fill="#E63946"/>
+  <!-- Vệt bóng sáng -->
+  <path d="M7 14 C6 17, 8 21, 10 23" stroke="#FF7B89" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="8" cy="13" r="1.2" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="15" cy="27" r="1" fill="#BA1827"/>
+</svg>`;
+
+// Quả táo thối (Rotten Apple) - SVG 30x30px (Tím xám độc hại, đốm mốc rêu, mắt gạch chéo X)
+const ROTTEN_APPLE_SVG = `
+<svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cuống héo -->
+  <path d="M15 9 C14 5, 12 3, 9 3" stroke="#3D2B1F" stroke-width="2" stroke-linecap="round"/>
+  <!-- Lá héo úa -->
+  <path d="M13 7 C10 6, 7 8, 8 10 C10 11, 13 9, 13 7 Z" fill="#756A3E"/>
+  <!-- Thân táo tím mốc độc hại -->
+  <path d="M15 11 C11 7, 3 10, 4 18 C5 24, 11 27, 15 28 C19 27, 25 24, 26 18 C27 10, 19 7, 15 11 Z" fill="#4B3B5E"/>
+  <!-- Đốm thối rữa -->
+  <ellipse cx="10" cy="17" rx="2.5" ry="3" fill="#6A7F46"/>
+  <circle cx="20" cy="16" r="2.2" fill="#362942"/>
+  <circle cx="16" cy="22" r="1.8" fill="#5F733D"/>
+  <!-- Mắt chữ X hoạt hình -->
+  <path d="M9 13 L13 17 M13 13 L9 17" stroke="#A89BBF" stroke-width="1.2" stroke-linecap="round"/>
+  <path d="M17 13 L21 17 M21 13 L17 17" stroke="#A89BBF" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Làn khói bốc mùi -->
+  <path d="M21 7 C23 5, 21 3, 23 1" stroke="#88A05B" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="1 1"/>
+</svg>`;
+
+// Giỏ hứng (Basket) - SVG 80x30px (Có vành tròn, thân đan nan chéo wicker)
+const BASKET_SVG = `
+<svg width="80" height="30" viewBox="0 0 80 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Vành giỏ bo tròn -->
+  <rect x="2" y="1" width="76" height="7" rx="3.5" fill="#8B5A2B" stroke="#5C3D2E" stroke-width="1.5"/>
+  <rect x="6" y="2.5" width="68" height="2" rx="1" fill="#B27A44" opacity="0.6"/>
+  <!-- Thân giỏ hình thang -->
+  <path d="M7 8 L15 28 C15.5 29 17 30 19 30 L61 30 C63 30 64.5 29 65 28 L73 8 Z" fill="#9C6644" stroke="#5C3D2E" stroke-width="1.5"/>
+  <!-- Nan nan wicker đan chéo -->
+  <path d="M19 8 L27 29 M31 8 L39 29 M43 8 L51 29 M55 8 L63 29" stroke="#6F421E" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M61 8 L53 29 M49 8 L41 29 M37 8 L29 29 M25 8 L17 29" stroke="#6F421E" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Nan nẹp ngang -->
+  <path d="M10 14 L70 14 M12 21 L68 21" stroke="#BA8253" stroke-width="1.2" opacity="0.7"/>
+  <!-- Đáy giỏ -->
+  <rect x="18" y="27" width="44" height="2.5" rx="1" fill="#5C3D2E"/>
+</svg>`;
+
+// =============================================================================
+// 3. TRUY XUẤT CÁC PHẦN TỬ DOM (DOM ELEMENTS)
+// =============================================================================
+// Các ID bắt buộc theo đúng checklist
+const gameContainer = document.getElementById('game-container');
+const basketEl = document.getElementById('basket');
+const appleEl = document.getElementById('apple');
+const scoreEl = document.getElementById('score');
+const livesEl = document.getElementById('lives');
+const startBtn = document.getElementById('start-btn');
+
+// Các phần tử bổ trợ UI & Âm thanh
+const highScoreEl = document.getElementById('high-score');
+const heartsDisplayEl = document.getElementById('hearts-display');
+const heartIconMain = document.getElementById('heart-icon-main');
+const soundBtn = document.getElementById('sound-btn');
+const soundIcon = document.getElementById('sound-icon');
+const startOverlay = document.getElementById('start-overlay');
+const overlayStartBtn = document.getElementById('overlay-start-btn');
+const gameOverOverlay = document.getElementById('game-over');
+const gameOverMsgEl = document.getElementById('game-over-msg');
+const finalScoreEl = document.getElementById('final-score');
+const overlayHighScoreEl = document.getElementById('overlay-high-score');
+const restartBtn = document.getElementById('restart-btn');
+const effectsLayer = document.getElementById('effects-layer');
+
+// =============================================================================
+// 4. TRẠNG THÁI GAME (GAME STATE)
+// =============================================================================
+let score = 0;
+let lives = INITIAL_LIVES;
+let speed = INITIAL_SPEED;
+let highScore = parseInt(localStorage.getItem('catch_apple_high_score') || '0', 10);
+let isSoundEnabled = localStorage.getItem('catch_apple_sound') !== 'false';
+
+// Vận tốc và toạ độ giỏ hứng
+let basketX = (CONTAINER_WIDTH - BASKET_WIDTH) / 2;
+let basketVelocity = 0;
+
+// Toạ độ quả táo
+let appleX = 0;
+let appleY = 0;
+let isCurrentAppleRotten = false;
+
+// Đếm chuỗi hứng trúng liên tiếp (Combo)
+let comboCount = 0;
+
+// Vòng lặp khung hình
+let animationFrameId = null;
+let isPlaying = false;
+const keyState = {
+  ArrowLeft: false,
+  ArrowRight: false,
+  KeyA: false,
+  KeyD: false
+};
+
+// =============================================================================
+// 5. BỘ TỔNG HỢP ÂM THANH (WEB AUDIO API CHIMES & SOUNDS)
+// Hoạt động mượt mà không cần tải file ngoài
+// =============================================================================
+let audioCtx = null;
+
+function initAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playSound(type, comboLevel = 0) {
+  if (!isSoundEnabled) return;
+  initAudioContext();
+  if (!audioCtx) return;
+
+  const now = audioCtx.currentTime;
+
+  switch (type) {
+    case 'catch': { // Tiếng hứng táo chín: âm sắc trong sáng, lên tone theo combo
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      const baseFreq = 523.25 + Math.min(comboLevel, 6) * 55; // C5 tăng dần theo combo
+      osc1.type = 'triangle';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(baseFreq, now);
+      osc2.frequency.setValueAtTime(baseFreq * 1.5, now + 0.04); // Quãng năm trong trẻo
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.005, now + 0.16);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start(now);
+      osc2.start(now + 0.04);
+      osc1.stop(now + 0.17);
+      osc2.stop(now + 0.17);
+      break;
+    }
+
+    case 'combo': { // Tiếng chuông combo đặc biệt khi đạt mốc >= 3
+      const freqs = [659.25, 783.99, 1046.50]; // E5, G5, C6
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+
+        gain.gain.setValueAtTime(0.18, now + idx * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.005, now + idx * 0.05 + 0.14);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now + idx * 0.05);
+        osc.stop(now + idx * 0.05 + 0.15);
+      });
+      break;
+    }
+
+    case 'rotten': { // Tiếng táo thối: đục, rè và trượt dốc khó chịu
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, now);
+      osc.frequency.linearRampToValueAtTime(80, now + 0.22);
+
+      gain.gain.setValueAtTime(0.26, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.23);
+      break;
+    }
+
+    case 'miss': { // Để táo chín rơi chạm đáy: rơi trầm buồn
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(110, now + 0.18);
+
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.19);
+      break;
+    }
+
+    case 'safe_splat': { // Táo thối chạm đáy an toàn (nhẹ nhàng nổ bọt)
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.linearRampToValueAtTime(95, now + 0.09);
+
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.09);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.1);
+      break;
+    }
+
+    case 'gameover': { // Nhạc buồn khi hết mạng
+      const notes = [392.00, 349.23, 329.63, 261.63]; // G4, F4, E4, C4
+      notes.forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + i * 0.12);
+
+        gain.gain.setValueAtTime(0.2, now + i * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.005, now + i * 0.12 + 0.28);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.12);
+        osc.stop(now + i * 0.12 + 0.3);
+      });
+      break;
+    }
+
+    case 'click': { // Tiếng nhấn nút mềm
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.06);
+
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.07);
+      break;
+    }
+  }
+}
+
+// Bật/tắt âm thanh
+function updateSoundButton() {
+  soundIcon.textContent = isSoundEnabled ? '🔊' : '🔇';
+  soundBtn.title = isSoundEnabled ? 'Tắt âm thanh' : 'Bật âm thanh';
+}
+
+soundBtn.addEventListener('click', () => {
+  isSoundEnabled = !isSoundEnabled;
+  localStorage.setItem('catch_apple_sound', isSoundEnabled);
+  updateSoundButton();
+  if (isSoundEnabled) playSound('click');
+});
+
+// =============================================================================
+// 6. KHỞI TẠO ĐỒ HOẠ VÀ HIỂN THỊ
+// =============================================================================
+function initAssets() {
+  basketEl.innerHTML = BASKET_SVG;
+  updateAppleAppearance(false);
+  updateScoreDisplay();
+  updateLivesDisplay();
+  highScoreEl.textContent = highScore;
+  updateSoundButton();
+}
+
+/**
+ * Đổi ngoại hình của quả táo giữa Táo Chín và Táo Thối
+ */
+function updateAppleAppearance(isRotten) {
+  isCurrentAppleRotten = isRotten;
+  if (isRotten) {
+    appleEl.innerHTML = ROTTEN_APPLE_SVG;
+    appleEl.classList.add('rotten');
+    appleEl.setAttribute('aria-label', 'Quả táo thối');
+  } else {
+    appleEl.innerHTML = NORMAL_APPLE_SVG;
+    appleEl.classList.remove('rotten');
+    appleEl.setAttribute('aria-label', 'Quả táo chín đỏ');
+  }
+}
+
+/**
+ * Reset vị trí quả táo về đỉnh ngẫu nhiên [0, 500 - chiều rộng táo]
+ * Ngẫu nhiên quyết định quả tiếp theo có phải táo thối không (20-30%)
+ */
+function resetApple() {
+  appleY = 0;
+  const maxLeft = CONTAINER_WIDTH - APPLE_WIDTH;
+  appleX = Math.floor(Math.random() * (maxLeft + 1));
+  
+  appleEl.style.top = appleY + 'px';
+  appleEl.style.left = appleX + 'px';
+
+  const shouldBeRotten = Math.random() < ROTTEN_APPLE_CHANCE;
+  updateAppleAppearance(shouldBeRotten);
+}
+
+/**
+ * Cập nhật hiển thị điểm số kèm hiệu ứng nảy số
+ */
+function updateScoreDisplay(withPop = false) {
+  scoreEl.textContent = score;
+  if (withPop) {
+    scoreEl.classList.remove('score-pop');
+    void scoreEl.offsetWidth; // Force reflow
+    scoreEl.classList.add('score-pop');
+    setTimeout(() => scoreEl.classList.remove('score-pop'), 200);
+  }
+
+  if (score > highScore) {
+    highScore = score;
+    highScoreEl.textContent = highScore;
+    localStorage.setItem('catch_apple_high_score', highScore);
+  }
+}
+
+/**
+ * Cập nhật hiển thị số mạng sống và hiệu ứng trái tim
+ */
+function updateLivesDisplay(isLost = false) {
+  const validLives = Math.max(0, lives);
+  livesEl.textContent = validLives;
+  
+  // Cập nhật 3 icon tim SVG: tim còn mạng màu đỏ (.active), tim mất màu xám tối (.lost)
+  if (heartsDisplayEl) {
+    const heartSvgs = heartsDisplayEl.querySelectorAll('.heart-svg');
+    if (heartSvgs.length > 0) {
+      heartSvgs.forEach((svg, index) => {
+        if (index < validLives) {
+          svg.classList.add('active');
+          svg.classList.remove('lost');
+        } else {
+          svg.classList.remove('active');
+          svg.classList.add('lost');
+        }
+      });
+      heartsDisplayEl.setAttribute('aria-label', `${validLives} mạng`);
+    } else {
+      heartsDisplayEl.textContent = '❤️'.repeat(validLives) + '🖤'.repeat(Math.max(0, INITIAL_LIVES - validLives));
+    }
+  }
+
+  // Hiệu ứng giật đỏ khi mất mạng
+  if (isLost && heartsDisplayEl) {
+    heartsDisplayEl.classList.remove('heart-shatter');
+    void heartsDisplayEl.offsetWidth;
+    heartsDisplayEl.classList.add('heart-shatter');
+    setTimeout(() => heartsDisplayEl.classList.remove('heart-shatter'), 320);
+  }
+
+  // Hiệu ứng nhịp tim hồi hộp khi chỉ còn 1 mạng sống
+  if (validLives === 1) {
+    if (heartsDisplayEl) heartsDisplayEl.classList.add('heart-danger');
+    if (heartIconMain) heartIconMain.classList.add('heart-danger');
+  } else {
+    if (heartsDisplayEl) heartsDisplayEl.classList.remove('heart-danger');
+    if (heartIconMain) heartIconMain.classList.remove('heart-danger');
+  }
+}
+
+// =============================================================================
+// 7. HỆ THỐNG HIỆU ỨNG HÌNH ẢNH NỊNH MẮT (PARTICLES & JUICY VISUALS)
+// =============================================================================
+
+/**
+ * Chữ điểm số bay lượn (+1, -1 Mạng, An toàn!)
+ */
+function createScoreFloat(text, x, y, type = 'normal') {
+  const floatEl = document.createElement('div');
+  floatEl.className = 'score-float' + (type === 'bad' ? ' bad' : (type === 'safe' ? ' safe' : ''));
+  floatEl.textContent = text;
+  floatEl.style.left = Math.min(Math.max(10, x), CONTAINER_WIDTH - 80) + 'px';
+  floatEl.style.top = y + 'px';
+  effectsLayer.appendChild(floatEl);
+
+  setTimeout(() => {
+    if (floatEl.parentNode) floatEl.remove();
+  }, 780);
+}
+
+/**
+ * Banner Combo hiển thị nổi bật ở giữa khung khi hứng liên tiếp
+ * Hiện tối đa ~0.75s, không để đè chồng liên tục
+ */
+function showComboBanner(streak) {
+  // Xóa banner cũ nếu đang có để tránh đè chồng kéo dài
+  const existing = effectsLayer.querySelector('.combo-banner');
+  if (existing) existing.remove();
+
+  const banner = document.createElement('div');
+  banner.className = 'combo-banner';
+  let badgeText = `Combo x${streak}! 🔥`;
+  if (streak >= 5) badgeText = `Xuất sắc x${streak}! 👑`;
+  else if (streak >= 4) badgeText = `Tuyệt vời x${streak}! ⭐`;
+
+  banner.textContent = badgeText;
+  effectsLayer.appendChild(banner);
+
+  setTimeout(() => {
+    if (banner.parentNode) banner.remove();
+  }, 750);
+}
+
+/**
+ * Vụ nổ hạt nhiều màu sắc (trái cây, sao vàng, lá xanh)
+ */
+function createJuicyBurst(x, y, isRotten = false) {
+  const count = isRotten ? 9 : 12;
+  const colors = isRotten 
+    ? ['#4B3B5E', '#6A7F46', '#88A05B', '#362942'] 
+    : ['#E63946', '#FF7B89', '#FFD166', '#4E9F3D', '#FFFFFF'];
+
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 4 + Math.random() * 5;
+    
+    p.style.backgroundColor = color;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+
+    const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.4 - 0.2);
+    const distance = 24 + Math.random() * 32;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance - (isRotten ? 0 : 8); // Táo chín nảy nhẹ lên
+    const rot = Math.floor(Math.random() * 360) + 'deg';
+
+    p.style.setProperty('--dx', `${dx}px`);
+    p.style.setProperty('--dy', `${dy}px`);
+    p.style.setProperty('--rot', rot);
+    effectsLayer.appendChild(p);
+
+    setTimeout(() => {
+      if (p.parentNode) p.remove();
+    }, 600);
+  }
+}
+
+/**
+ * Giọt bắn toé khi táo chín rơi chạm đáy khung
+ */
+function createBottomSplat(x, y) {
+  const ring = document.createElement('div');
+  ring.className = 'splat-ring';
+  ring.style.left = x + 'px';
+  ring.style.top = y + 'px';
+  effectsLayer.appendChild(ring);
+
+  setTimeout(() => {
+    if (ring.parentNode) ring.remove();
+  }, 420);
+}
+
+// Kích hoạt các hoạt ảnh giỏ và khung
+function triggerBasketBounce() {
+  basketEl.classList.remove('basket-bounce');
+  void basketEl.offsetWidth;
+  basketEl.classList.add('basket-bounce');
+  setTimeout(() => basketEl.classList.remove('basket-bounce'), 280);
+}
+
+function triggerBasketShock() {
+  basketEl.classList.remove('basket-bad');
+  void basketEl.offsetWidth;
+  basketEl.classList.add('basket-bad');
+  setTimeout(() => basketEl.classList.remove('basket-bad'), 320);
+}
+
+function triggerContainerShake() {
+  gameContainer.classList.remove('shake-container');
+  gameContainer.classList.remove('damage-flash');
+  void gameContainer.offsetWidth;
+  gameContainer.classList.add('shake-container');
+  gameContainer.classList.add('damage-flash');
+  setTimeout(() => {
+    gameContainer.classList.remove('shake-container');
+    gameContainer.classList.remove('damage-flash');
+  }, 350);
+}
+
+// =============================================================================
+// 8. ĐIỀU KHIỂN & VẬT LÝ QUÁN TÍNH CỦA GIỎ HỨNG
+// Di chuyển mượt mà, quán tính tự nhiên, nghiêng giỏ linh hoạt
+// =============================================================================
+window.addEventListener('keydown', (e) => {
+  if (['ArrowLeft', 'ArrowRight', 'Space'].includes(e.code) || ['ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+  }
+
+  if (e.code === 'ArrowLeft' || e.key === 'ArrowLeft') keyState.ArrowLeft = true;
+  if (e.code === 'ArrowRight' || e.key === 'ArrowRight') keyState.ArrowRight = true;
+  if (e.code === 'KeyA' || e.key === 'a' || e.key === 'A') keyState.KeyA = true;
+  if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D') keyState.KeyD = true;
+
+  if (e.code === 'Space') {
+    if (!isPlaying) startGame();
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowLeft' || e.key === 'ArrowLeft') keyState.ArrowLeft = false;
+  if (e.code === 'ArrowRight' || e.key === 'ArrowRight') keyState.ArrowRight = false;
+  if (e.code === 'KeyA' || e.key === 'a' || e.key === 'A') keyState.KeyA = false;
+  if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D') keyState.KeyD = false;
+});
+
+/**
+ * Cập nhật vị trí giỏ bằng phương trình quán tính (Acceleration + Friction)
+ * Giới hạn tuyệt đối trong khung: 0 <= left <= (500 - BASKET_WIDTH)
+ */
+function updateBasketPosition() {
+  // 1. Gia tốc di chuyển
+  if (keyState.ArrowLeft || keyState.KeyA) {
+    basketVelocity -= BASKET_ACCEL;
+  }
+  if (keyState.ArrowRight || keyState.KeyD) {
+    basketVelocity += BASKET_ACCEL;
+  }
+
+  // 2. Ma sát làm dịu chuyển động khi nhả phím
+  basketVelocity *= BASKET_FRICTION;
+  if (Math.abs(basketVelocity) < 0.04) basketVelocity = 0;
+
+  // 3. Giới hạn vận tốc tối đa
+  if (basketVelocity > MAX_BASKET_SPEED) basketVelocity = MAX_BASKET_SPEED;
+  if (basketVelocity < -MAX_BASKET_SPEED) basketVelocity = -MAX_BASKET_SPEED;
+
+  // 4. Cộng dồn toạ độ
+  basketX += basketVelocity;
+
+  // 5. Cố định giỏ trong giới hạn khung viền
+  const maxBasketX = CONTAINER_WIDTH - BASKET_WIDTH;
+  if (basketX <= 0) {
+    basketX = 0;
+    basketVelocity = 0;
+  } else if (basketX >= maxBasketX) {
+    basketX = maxBasketX;
+    basketVelocity = 0;
+  }
+
+  // 6. Tính toán góc nghiêng tự nhiên theo vận tốc (Dynamic Tilt)
+  const tiltAngle = (basketVelocity / MAX_BASKET_SPEED) * MAX_TILT_DEGREE;
+
+  basketEl.style.left = basketX + 'px';
+  basketEl.style.transform = `rotate(${tiltAngle.toFixed(2)}deg)`;
+}
+
+// =============================================================================
+// 9. KIỂM TRA VA CHẠM (COLLISION DETECTION - AABB)
+// =============================================================================
+function checkCollision() {
+  const appleLeft = appleX;
+  const appleRight = appleX + APPLE_WIDTH;
+  const appleTop = appleY;
+  const appleBottom = appleY + APPLE_HEIGHT;
+
+  const basketLeft = basketX;
+  const basketRight = basketX + BASKET_WIDTH;
+  const basketTop = CONTAINER_HEIGHT - BASKET_HEIGHT;
+  const basketBottom = CONTAINER_HEIGHT;
+
+  return (
+    appleRight > basketLeft &&
+    appleLeft < basketRight &&
+    appleBottom >= basketTop &&
+    appleTop <= basketBottom
+  );
+}
+
+// =============================================================================
+// 10. VÒNG LẶP CHÍNH CỦA GAME (MAIN GAME LOOP - requestAnimationFrame)
+// =============================================================================
+function gameLoop() {
+  if (!isPlaying) return;
+
+  // 1. Cập nhật vị trí giỏ hứng với quán tính mượt
+  updateBasketPosition();
+
+  // 2. Cập nhật vị trí rơi của quả táo
+  appleY += speed;
+  appleEl.style.top = appleY + 'px';
+
+  // 3. KIỂM TRA VA CHẠM TRƯỚC (Yêu cầu đặc tả: kiểm tra TRƯỚC khi kiểm tra chạm đáy)
+  if (checkCollision()) {
+    if (isCurrentAppleRotten) {
+      // HỨNG TRÚNG TÁO THỐI:
+      // - lives - 1, không cộng điểm, đứt chuỗi combo
+      lives -= 1;
+      comboCount = 0;
+      updateLivesDisplay(true);
+      playSound('rotten');
+      triggerBasketShock();
+      triggerContainerShake();
+      createScoreFloat('-1 Mạng! 🟣', basketX + 10, CONTAINER_HEIGHT - 65, 'bad');
+      createJuicyBurst(basketX + BASKET_WIDTH / 2, CONTAINER_HEIGHT - 20, true);
+
+      if (lives <= 0) {
+        handleGameOver('Bạn đã hứng phải quả táo thối!');
+        return;
+      }
+    } else {
+      // HỨNG TRÚNG TÁO CHÍN:
+      // - score + 1, speed tăng nhẹ (+0.3 mỗi lần), tích luỹ combo
+      score += 1;
+      speed += SPEED_INCREMENT;
+      comboCount++;
+      updateScoreDisplay(true);
+
+      if (comboCount >= 3) {
+        playSound('combo');
+        showComboBanner(comboCount);
+      } else {
+        playSound('catch', comboCount);
+      }
+
+      triggerBasketBounce();
+      createScoreFloat('+1', basketX + 25, CONTAINER_HEIGHT - 65, 'normal');
+      createJuicyBurst(basketX + BASKET_WIDTH / 2, CONTAINER_HEIGHT - 20, false);
+    }
+
+    // Táo hồi sinh ngẫu nhiên ở đỉnh
+    resetApple();
+  }
+  // 4. KIỂM TRA TÁO CHẠM ĐÁY KHUNG
+  else if (appleY + APPLE_HEIGHT >= CONTAINER_HEIGHT) {
+    if (!isCurrentAppleRotten) {
+      // TÁO CHÍN RƠI CHẠM ĐÁY:
+      // - lives - 1, cập nhật #lives, đứt combo, táo reset về đỉnh
+      lives -= 1;
+      comboCount = 0;
+      updateLivesDisplay(true);
+      playSound('miss');
+      triggerContainerShake();
+      createBottomSplat(appleX + APPLE_WIDTH / 2, CONTAINER_HEIGHT - 5);
+      createScoreFloat('-1 Mạng', appleX, CONTAINER_HEIGHT - 50, 'bad');
+      createJuicyBurst(appleX + APPLE_WIDTH / 2, CONTAINER_HEIGHT - 10, false);
+
+      if (lives <= 0) {
+        handleGameOver('Bạn đã để rơi mất táo chín!');
+        return;
+      }
+    } else {
+      // TÁO THỐI RƠI CHẠM ĐÁY:
+      // - Đặc tả: "không mất mạng, không trừ điểm, chỉ reset"
+      playSound('safe_splat');
+      createScoreFloat('An toàn! 💨', appleX - 10, CONTAINER_HEIGHT - 50, 'safe');
+      createJuicyBurst(appleX + APPLE_WIDTH / 2, CONTAINER_HEIGHT - 10, true);
+    }
+
+    // Táo reset về đỉnh với left ngẫu nhiên
+    resetApple();
+  }
+
+  // Tiếp tục vòng lặp game
+  animationFrameId = requestAnimationFrame(gameLoop);
+}
+
+// =============================================================================
+// 11. BẮT ĐẦU VÀ KẾT THÚC GAME (GAME MANAGEMENT)
+// =============================================================================
+function startGame() {
+  initAudioContext();
+  playSound('click');
+
+  // Đảm bảo dừng hẳn vòng lặp cũ, tránh tạo nhiều vòng lặp chồng nhau
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  // Khôi phục trạng thái ban đầu
+  score = 0;
+  lives = INITIAL_LIVES;
+  speed = INITIAL_SPEED;
+  comboCount = 0;
+  basketVelocity = 0;
+
+  updateScoreDisplay();
+  updateLivesDisplay();
+
+  // Đặt lại vị trí giỏ và táo
+  basketX = (CONTAINER_WIDTH - BASKET_WIDTH) / 2;
+  basketEl.style.left = basketX + 'px';
+  basketEl.style.transform = 'rotate(0deg)';
+  resetApple();
+
+  // Xoá các hiệu ứng nổi còn sót
+  effectsLayer.innerHTML = '';
+
+  // Ẩn các màn hình overlay
+  startOverlay.classList.add('hidden');
+  gameOverOverlay.classList.add('hidden');
+
+  // Khởi động vòng lặp game
+  isPlaying = true;
+  animationFrameId = requestAnimationFrame(gameLoop);
+}
+
+/**
+ * Xử lý khi game kết thúc (lives = 0)
+ * Hiển thị overlay Game Over trong #game-container, kèm điểm cuối, không dùng popup modal hệ thống
+ * Dừng hẳn vòng lặp bằng cancelAnimationFrame
+ */
+function handleGameOver(reasonText = 'Bạn đã hết mạng!') {
+  isPlaying = false;
+
+  // Dừng hẳn vòng lặp
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  playSound('gameover');
+
+  // Cập nhật thông tin điểm số
+  finalScoreEl.textContent = score;
+  overlayHighScoreEl.textContent = highScore;
+  gameOverMsgEl.textContent = reasonText;
+
+  // Hiển thị overlay
+  gameOverOverlay.classList.remove('hidden');
+}
+
+// =============================================================================
+// 12. GẮN SỰ KIỆN NÚT BẤM (EVENT LISTENERS)
+// =============================================================================
+startBtn.addEventListener('click', startGame);
+overlayStartBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+
+// Khởi tạo đồ hoạ ban đầu khi tải trang
+initAssets();
+basketEl.style.left = basketX + 'px';
+basketEl.style.transform = 'rotate(0deg)';
+resetApple();
+
+  </script>
+</body>
+</html>
